@@ -14,13 +14,14 @@ func main() {
 	fmt.Println(game.board_width)
 	fmt.Println(game.board_height)
 
-	game.render()
-
 	err := termbox.Init()
 	if err != nil {
 		panic(err)
 	}
 	defer termbox.Close()
+
+	game.render()
+
 	event_q := make(chan termbox.Event)
 	go func() {
 		for {

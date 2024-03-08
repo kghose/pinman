@@ -24,12 +24,14 @@ func (g *PinmanGame) load() {
 	}
 	defer f.Close()
 
+	g.board_width = 0
 	scanner := bufio.NewScanner(f)
 	for scanner.Scan() {
-		g.board = append(g.board, strings.Clone(scanner.Text()))
+		line := strings.Clone(scanner.Text())
+		g.board_width = max(g.board_width, len(line))
+		g.board = append(g.board, line)
 	}
 
-	g.board_width = len(g.board[0])
 	g.board_height = len(g.board)
 
 }
