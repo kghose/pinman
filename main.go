@@ -1,18 +1,13 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/nsf/termbox-go"
 )
 
 func main() {
 
-	game := PinmanGame{board_no: 1}
-	game.load()
-	fmt.Println(game.board)
-	fmt.Println(game.board_width)
-	fmt.Println(game.board_height)
+	game := PinmanGame{}
+	game.load(1)
 
 	err := termbox.Init()
 	if err != nil {

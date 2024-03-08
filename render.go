@@ -11,7 +11,7 @@ var (
 	void   = GridGlyph{glyph: ' ', col: termbox.ColorBlack}
 	square = GridGlyph{glyph: 0x2b1c, col: termbox.ColorLightBlue}
 	exit   = GridGlyph{glyph: 0x2b1b, col: termbox.ColorGreen}
-	pin    = GridGlyph{glyph: 'P', col: termbox.ColorRed}
+	pinman = GridGlyph{glyph: 0x2b1b, col: termbox.ColorRed}
 )
 
 const (
@@ -21,19 +21,24 @@ const (
 
 func (g *PinmanGame) render() {
 	termbox.Clear(void.col, void.col)
-	for row := 0; row <= g.board_height; row++ {
-		for col := 0; col <= g.board_width; col++ {
-			c := g.cell(row, col)
-			termbox.SetCell(col_offset+col*2, row_offset+row, c.glyph, c.col, void.col)
-		}
-	}
+	g.board.render()
+	g.man.render()
 	err := termbox.Flush()
 	if err != nil {
 		panic(err)
 	}
 }
 
-func (g *PinmanGame) cell(r int, c int) GridGlyph {
+func (g *PinmanGameBoard) render() {
+	for row := 0; row <= g.board_height; row++ {
+		for col := 0; col <= g.board_width; col++ {
+			c := g.cell(row, col)
+			termbox.SetCell(col_offset+col*2, row_offset+row, c.glyph, c.col, void.col)
+		}
+	}
+}
+
+func (g *PinmanGameBoard) cell(r int, c int) GridGlyph {
 	if r < 0 || r >= g.board_height {
 		return void
 	}
@@ -41,11 +46,24 @@ func (g *PinmanGame) cell(r int, c int) GridGlyph {
 		return void
 	}
 	b := g.board[r][c]
-	if b == '.' {
+	if b == '.' || b == 'P' {
 		return square
 	}
 	if b == 'X' {
 		return exit
 	}
 	return void
+}
+
+func (p *Pinman) render() {
+	switch p.orientation {
+	case Up:
+		termbox.SetCell(col_offset+p.col*2, row_offset+p.row, pinman.glyph, pinman.col, pinman.col)
+	case Vert:
+		termbox.SetCell(col_offset+p.col*2, row_offset+p.row, pinman.glyph, pinman.col, pinman.col)
+		termbox.SetCell(col_offset+p.col*2, row_offset+p.row+1, pinman.glyph, pinman.col, pinman.col)
+	case Horiz:
+		termbox.SetCell(col_offset+p.col*2, row_offset+p.row, pinman.glyph, pinman.col, pinman.col)
+		termbox.SetCell(col_offset+p.col*2+2, row_offset+p.row, pinman.glyph, pinman.col, pinman.col)
+	}
 }
