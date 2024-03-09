@@ -75,14 +75,24 @@ func (p *Pinman) move_down() {
 	}
 }
 
+type PinmanGameBoardSquare string
+
+const (
+	Abyss PinmanGameBoardSquare = "ABYSS"
+	Land  PinmanGameBoardSquare = "LAND"
+	Exit  PinmanGameBoardSquare = "EXIT"
+)
+
 type PinmanGameBoard struct {
 	board_no                  int
 	board                     []string
 	board_width, board_height int
+	ideal_steps               int
 }
 
 func (g *PinmanGameBoard) load(board_no int) {
 	g.board_no = board_no
+	g.board = nil
 	file_name := fmt.Sprintf("game_%02d.txt", g.board_no)
 	f, err := os.Open(filepath.Join(game_data_dir, file_name))
 	if err != nil {
@@ -111,15 +121,105 @@ func (b *PinmanGameBoard) get_pinman_position() (int, int) {
 	panic("Can't find pinman on board! Pinman's start position has to be marked with a 'P' on the board.")
 }
 
+func (g *PinmanGameBoard) square(r int, c int) PinmanGameBoardSquare {
+	if r < 0 || r >= g.board_height {
+		return Abyss
+	}
+	if c < 0 || c >= len(g.board[r]) {
+		return Abyss
+	}
+	b := g.board[r][c]
+	if b == '.' || b == 'P' {
+		return Land
+	}
+	if b == 'X' {
+		return Exit
+	}
+	return Abyss
+}
+
+type GameState string
+
+const (
+	GameOn   GameState = "GAMEON"
+	FellDown GameState = "FELLDOWN"
+	Exited   GameState = "EXITED"
+)
+
 type PinmanGame struct {
-	board PinmanGameBoard
-	man   Pinman
+	board      PinmanGameBoard
+	man        Pinman
+	steps      int
+	game_state GameState
 }
 
 func (g *PinmanGame) load(board_no int) {
+	g.game_state = GameOn
+	g.steps = 0
 	g.board.load(board_no)
 	r, c := g.board.get_pinman_position()
 	g.man.row = r
 	g.man.col = c
 	g.man.orientation = Up
+}
+
+type PinmanMove string
+
+const (
+	MoveLeft  PinmanMove = "LEFT"
+	MoveRight PinmanMove = "RIGHT"
+	MoveUp    PinmanMove = "UP"
+	MoveDown  PinmanMove = "DOWN"
+)
+
+func (g *PinmanGame) move(dir PinmanMove) {
+	if g.game_state != GameOn {
+		return
+	}
+
+	switch dir {
+	case MoveLeft:
+		g.man.move_left()
+	case MoveRight:
+		g.man.move_right()
+	case MoveUp:
+		g.man.move_up()
+	case MoveDown:
+		g.man.move_down()
+	}
+	g.steps++
+
+	if !g.man_on_board() {
+		if g.man_escaped() {
+			g.game_state = Exited
+		} else {
+			g.game_state = FellDown
+		}
+	}
+}
+
+func (g *PinmanGame) man_on_board() bool {
+	switch g.man.orientation {
+	case Up:
+		return g.board.square(g.man.row, g.man.col) == Land
+	case Vert:
+		s1 := g.board.square(g.man.row, g.man.col)
+		s2 := g.board.square(g.man.row+1, g.man.col)
+		return (s1 == s2) && (s1 == Land)
+	case Horiz:
+		s1 := g.board.square(g.man.row, g.man.col)
+		s2 := g.board.square(g.man.row, g.man.col+1)
+		return (s1 == s2) && (s1 == Land)
+	}
+	panic("Pinman orientation has to be one of Up/Vert/Horiz")
+}
+
+func (g *PinmanGame) man_escaped() bool {
+	switch g.man.orientation {
+	case Vert, Horiz:
+		return false
+	case Up:
+		return g.board.square(g.man.row, g.man.col) == Exit
+	}
+	panic("Pinman orientation has to be one of Up/Vert/Horiz")
 }
