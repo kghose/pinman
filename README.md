@@ -1,9 +1,10 @@
 # Pinman
 
-https://youtu.be/KQ-VcKYxsmE
+Pinman is a puzzle game. 
 
-Pinman is a puzzle game. You are Pinman
-You don't look like much, but you can move!
+https://github.com/kghose/pinman/assets/664644/39791bc1-be9d-4b6b-9dcf-eb52f87744e7
+
+You are Pinman. You don't look like much, but you can move!
 
 You can tumble right.
 
