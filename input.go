@@ -2,15 +2,13 @@ package main
 
 import "github.com/nsf/termbox-go"
 
-func (g *PinmanGame) start() {
+func (g *PinmanGame) Start() {
 
 	err := termbox.Init()
 	if err != nil {
 		panic(err)
 	}
 	defer termbox.Close()
-
-	g.render()
 
 	event_q := make(chan termbox.Event)
 	go g.event_poll_loop(event_q)
@@ -24,6 +22,7 @@ func (g *PinmanGame) event_poll_loop(event_q chan termbox.Event) {
 }
 
 func (g *PinmanGame) main_loop(event_q chan termbox.Event) {
+	g.render()
 	game_on := true
 	for game_on {
 		select {
@@ -35,9 +34,9 @@ func (g *PinmanGame) main_loop(event_q chan termbox.Event) {
 				case Quit:
 					game_on = false
 				case Restart:
-					g.load(g.board.board_no)
+					g.Load(g.board.board_no)
 				case NextGame:
-					g.load(g.board.board_no + 1)
+					g.Load(g.board.board_no + 1)
 				}
 
 				g.render()

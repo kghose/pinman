@@ -153,7 +153,7 @@ type PinmanGame struct {
 	game_state GameState
 }
 
-func (g *PinmanGame) load(board_no int) {
+func (g *PinmanGame) Load(board_no int) {
 	g.game_state = GameOn
 	g.steps = 0
 	g.board.load(board_no)

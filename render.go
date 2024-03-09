@@ -36,14 +36,47 @@ func (g *PinmanGame) render() {
 
 func (g *PinmanGame) render_status() {
 
-	message(g.board.board_height+row_offset+3, col_offset, "Q=quit,R=Restart")
-	message(g.board.board_height+row_offset+1, col_offset, fmt.Sprintf("Steps: %d", g.steps))
+	banner_width := 2*g.board.board_width + 2*col_offset
+	banner(
+		g.board.board_height+row_offset+3,
+		0,
+		banner_width,
+		"q=quit,r=restart",
+		true,
+		termbox.ColorBlack,
+		termbox.ColorGreen,
+	)
+	banner(
+		g.board.board_height+row_offset+2,
+		0,
+		banner_width,
+		fmt.Sprintf("Steps: %d", g.steps),
+		true,
+		termbox.ColorLightYellow,
+		termbox.ColorLightGray,
+	)
 
 	if g.game_state == Exited {
-		message(0, col_offset, "You Escaped!! Press n for next game.")
+		banner(
+			0,
+			0,
+			banner_width,
+			"You Escaped!! n=next game.",
+			true,
+			termbox.ColorYellow,
+			termbox.ColorWhite,
+		)
 	}
 	if g.game_state == FellDown {
-		message(0, col_offset, "INTO THE ABYSS!! Press r to restart.")
+		banner(
+			0,
+			0,
+			banner_width,
+			"You FELL!!",
+			true,
+			termbox.ColorWhite,
+			termbox.ColorRed,
+		)
 	}
 
 }
@@ -75,15 +108,45 @@ func (p *Pinman) render() {
 		termbox.SetCell(col_offset+p.col*2, row_offset+p.row, pinman.glyph, pinman.col, pinman.col)
 	case Vert:
 		termbox.SetCell(col_offset+p.col*2, row_offset+p.row, pinman.glyph, pinman.col, pinman.col)
-		termbox.SetCell(col_offset+p.col*2, row_offset+p.row+1, pinman.glyph, pinman.col, pinman.col)
+		termbox.SetCell(
+			col_offset+p.col*2,
+			row_offset+p.row+1,
+			pinman.glyph,
+			pinman.col,
+			pinman.col,
+		)
 	case Horiz:
 		termbox.SetCell(col_offset+p.col*2, row_offset+p.row, pinman.glyph, pinman.col, pinman.col)
-		termbox.SetCell(col_offset+p.col*2+2, row_offset+p.row, pinman.glyph, pinman.col, pinman.col)
+		termbox.SetCell(
+			col_offset+p.col*2+2,
+			row_offset+p.row,
+			pinman.glyph,
+			pinman.col,
+			pinman.col,
+		)
 	}
 }
 
-func message(row int, col int, m string) {
-	for n, c := range m {
-		termbox.SetCell(col+n, row, c, termbox.ColorBlack, termbox.ColorWhite)
+func banner(
+	row int,
+	col int,
+	width int,
+	msg string,
+	center bool,
+	fg termbox.Attribute,
+	bg termbox.Attribute,
+) {
+	if center {
+		col = max(0, width/2-len(msg)/2)
 	}
+	for n := 0; n < col; n++ {
+		termbox.SetCell(n, row, ' ', bg, bg)
+	}
+	for n, c := range msg {
+		termbox.SetCell(col+n, row, c, fg, bg)
+	}
+	for n := col + len(msg); n < width; n++ {
+		termbox.SetCell(n, row, ' ', bg, bg)
+	}
+
 }
